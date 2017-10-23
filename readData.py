@@ -38,11 +38,13 @@ data_val_withlabel = data_label_combined[(numTrainSet + numTestSet - 1) : row, :
 
 
 
-# Create the Model
+# Create the Graph
 X = tf.placeholder(tf.float32, [None, 5])
+Y = tf.placeholder(tf.float32, [10, None])
 
 # Define the paras of the layers
 # The weights
+keep_prob = tf.placeholder(tf.float32)
 W1 = tf.Variable(tf.random_uniform([5, 12], -1.0, 1.0), name = "Weight1")
 W2 = tf.Variable(tf.random_uniform([12, 12], -1.0, 1.0), name = "Weight2")
 W3 = tf.Variable(tf.random_uniform([12, 12], -1.0, 1.0), name = "Weight3")
@@ -56,10 +58,25 @@ b4 = tf.Variable(tf.zeros([10]), name = "Bias4")
 
 # Hypothesis
 with tf.name_scope("input") as scope:
-    L1 = tf.sigmoid(tf.matul(X, W1) + b1)
+    L1 = tf.nn.relu(tf.matul(X, W1) + b1)
+    L1 = tf.nn.dropout(L1, keep_prob=keep_prob)  #dropout to prevent overfitting
 with tf.name_scope("layer2") as scope:
-    L2 = tf.sigmoid(tf.matul(L1, W2) + b2)
+    L2 = tf.nn.relu(tf.matul(L1, W2) + b2)
+    L2 = tf.nn.dropout(L2, keep_prob=keep_prob)
 with tf.name_scope("layer3") as scope:
-    L3 = tf.sigmoid(tf.matul(L2, W3) + b3)
+    L3 = tf.nn.relu(tf.matul(L2, W3) + b3)
+    L3 = tf.nn.dropout(L3, keep_prob=keep_prob)
 with tf.name_scope("output") as scope:
-    hypothesis = tf.sigmoid(tf.matul(L3, W4) + b4) 
+    hypothesis = tf.nn.relu(tf.matul(L3, W4) + b4) 
+    
+# cost/loss function
+cost = -tf.reduce_mean(Y * tf.log(hypothesis) + (1 - Y) * tf.log(1 - hypothesis))
+train = tf.train.GradientDescentOptimizer(learning_rate = 0.1).minimize(cost)
+
+# Accuracy computation
+# True if hypotheis 
+
+
+
+
+
