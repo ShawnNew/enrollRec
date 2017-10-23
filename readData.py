@@ -1,13 +1,35 @@
 import tensorflow as tf 
 from openpyxl import load_workbook
+import numpy as np
+import math
 
 
 # Read the data from xlsx file
-path2 = "/Users/apple/Desktop/stuData.xlsx"     # Create the path of the file
-workBook = load_workbook(path2)                 # Load the file
+path = "/Users/apple/Documents/Github/enrollRec/stuData.xlsx"
+workBook = load_workbook(path)                 # Load the file
 dataSheet = workBook.get_sheet_by_name('TrainData')  # Get the datasheet
 
-# Range from the datasheet to assign the training set, test set and validation set.
+# From the file read the dataSet
+row = 378742
+col = 5
+dataSet = np.zeros((row, col))
+label = np.zeros((row, 1))
+
+for i in range(0, row):
+    for j in range(0, col):
+        dataSet[i][j] = dataSheet.cell(row = i + 1, column = j + 1).value
+    label[i] = dataSheet.cell(row = i + 1, column = 6).value
+        
+# Divide the dataSet into training set, test set and validation set
+numTrainSet = math.ceil(row * 0.7)
+numTestSet = math.ceil(row * 0.15)
+numValSet = math.ceil(row * 0.15)
+data_label_combined = np.hstack((dataSet, label))  # Combine the dataset and label to shuffle
+np.random.shuffle(data_label_combined)             # Shuffle the dataset to divide
+data_train_withlabel = data_label_combined[0:numTrainSet, :]
+data_test_withlabel = data_label_combined[(numTrainSet - 1) : (numTrainSet + numTestSet), :]
+data_val_withlabel = data_label_combined[(numTrainSet + numTestSet - 1) : row, :]
+
 
 
 
