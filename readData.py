@@ -36,27 +36,31 @@ for i in range(0, row):
    
      
 # Divide the dataSet into training set, test set and validation set
-numTrainSet = math.ceil(row * 0.7)
-numTestSet = math.ceil(row * 0.15)
-numValSet = math.ceil(row * 0.15)
+numTrainSet = int(math.ceil(row * 0.7))
+numTestSet = int(math.ceil(row * 0.15))
+numValSet = int(math.ceil(row * 0.15))
 #data_label_combined = np.hstack((dataSet, label))  # Combine the dataset and label to shuffle
 
-#np.random.shuffle(dataSet)             # Shuffle the dataset to divide
+np.random.shuffle(dataSet)             # Shuffle the dataset to divide
 
 # Divide the dataset
-data_train_withlabel = dataSet[0:numTrainSet, :]
-data_test_withlabel = dataSet[(numTrainSet - 1) : (numTrainSet + numTestSet), :]
-data_val_withlabel = dataSet[(numTrainSet + numTestSet - 1) : row, :]
+data_train_withlabel = dataSet[0: numTrainSet, :]
+data_test_withlabel = dataSet[numTrainSet + 1: (numTrainSet + numTestSet), :]
+data_val_withlabel = dataSet[(numTrainSet + numTestSet) : row, :]
 # Map the label into one-hot vector
 data_train = data_train_withlabel[:, 0 : 5]
 data_val = data_val_withlabel[:, 0: 5]
 data_test = data_test_withlabel[:, 0: 5]
 # Vectorize the label
-for i in range(0, row):
+for i in range(len(data_train_withlabel)):
     for j in range(0, 10):
-        label_train[i][(data_train_withlabel[i][6]) - 1] = 1
-        label_test[i][(data_test_withlabel[i][6]) - 1] = 1
-        label_val[i][(data_val_withlabel[i][6]) - 1] = 1
+        label_train[i][(int(data_train_withlabel[i][5])) - 1] = 1
+for i in range(len(data_test_withlabel)):
+    for j in range(0, 10):
+        label_test[i][(int(data_test_withlabel[i][5])) - 1] = 1
+for i in range(len(data_val_withlabel)):
+    for j in range(0, 10):
+        label_val[i][(int(data_val_withlabel[i][5])) - 1] = 1
 
 
 
@@ -80,16 +84,16 @@ b4 = tf.Variable(tf.zeros([10]), name = "Bias4")
 
 # Hypothesis
 with tf.name_scope("input") as scope:
-    L1 = tf.nn.relu(tf.matul(X, W1) + b1)
+    L1 = tf.nn.relu(tf.matmul(X, W1) + b1)
     L1 = tf.nn.dropout(L1, keep_prob=keep_prob)  #dropout to prevent overfitting
 with tf.name_scope("layer2") as scope:
-    L2 = tf.nn.relu(tf.matul(L1, W2) + b2)
+    L2 = tf.nn.relu(tf.matmul(L1, W2) + b2)
     L2 = tf.nn.dropout(L2, keep_prob=keep_prob)
 with tf.name_scope("layer3") as scope:
-    L3 = tf.nn.relu(tf.matul(L2, W3) + b3)
+    L3 = tf.nn.relu(tf.matmul(L2, W3) + b3)
     L3 = tf.nn.dropout(L3, keep_prob=keep_prob)
 with tf.name_scope("output") as scope:
-    hypothesis = tf.nn.relu(tf.matul(L3, W4) + b4) 
+    hypothesis = tf.nn.relu(tf.matmul(L3, W4) + b4) 
     
 # cost/loss function
 cost = -tf.reduce_mean(Y * tf.log(hypothesis) + (1 - Y) * tf.log(1 - hypothesis))
@@ -98,12 +102,12 @@ train = tf.train.GradientDescentOptimizer(learning_rate = 0.1).minimize(cost)
 
 
 # Run the graph
-with tf.InteractiveSession() as sess:
-    # Initialize TensorFlow variablies
-    sess.run(tf.global_variables_initializer)
-    for i in range(1000):
-        batch_xs, batch_ys = next_batch(100, data_train, label_train)
-        sess.run([cost, train], feed_dict = {X: batch_xs, Y: batch_ys})
+# Initialize TensorFlow variablies
+sess = tf.InteractiveSession()
+tf.global_variables_initializer().run()
+for i in range(1000):
+    batch_xs, batch_ys = next_batch(100, data_train, label_train)
+    sess.run(train, feed_dict = {X: batch_xs, Y: batch_ys})
         
         
 # Evaluation
