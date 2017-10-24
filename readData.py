@@ -54,13 +54,13 @@ data_test = data_test_withlabel[:, 0: 5]
 # Vectorize the label
 for i in range(len(data_train_withlabel)):
     for j in range(0, 10):
-        label_train[i][(int(data_train_withlabel[i][5])) - 1] = 1
+        label_train[i][(int(data_train_withlabel[i][5])) - 1] = 1.0
 for i in range(len(data_test_withlabel)):
     for j in range(0, 10):
-        label_test[i][(int(data_test_withlabel[i][5])) - 1] = 1
+        label_test[i][(int(data_test_withlabel[i][5])) - 1] = 1.0
 for i in range(len(data_val_withlabel)):
     for j in range(0, 10):
-        label_val[i][(int(data_val_withlabel[i][5])) - 1] = 1
+        label_val[i][(int(data_val_withlabel[i][5])) - 1] = 1.0
 
 
 
@@ -107,13 +107,14 @@ sess = tf.InteractiveSession()
 tf.global_variables_initializer().run()
 for i in range(1000):
     batch_xs, batch_ys = next_batch(100, data_train, label_train)
-    sess.run(train, feed_dict = {X: batch_xs, Y: batch_ys})
+    sess.run(train, feed_dict = {X: batch_xs, Y: batch_ys, keep_prob: 0.7})
         
         
-# Evaluation
+# Test model and check accuracy
+
 correct_prediction = tf.equal(tf.argmax(Y, 1), tf.argmax(label_train, 1))
 accuracy = tf.reduce_mean(tf.cast(correct_prediction, tf.float32))
-
+print('Accuracy:', sess.run(accuracy, feed_dict={X: data_test, Y: label_test, keep_prob: 1}))
         
 
 
