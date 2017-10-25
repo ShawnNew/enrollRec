@@ -86,66 +86,84 @@ print 'Size of Test Set:' + str(len(data_test))
 print 'Size of Validation Set:' + str(len(data_val))
 
 #%% Create the Graph
+# dataset and label
 X = tf.placeholder(tf.float32, [None, 5])
 Y = tf.placeholder(tf.float32, [None, 10])
 
 # Define the paras of the layers
 # The weights
+n_input = 5   # 5 features
+n_hidden_1 = 12
+n_hidden_2 = 12
+n_hidden_3 = 12
+n_hidden_4 = 12
+n_classes = 10
+
 keep_prob = tf.placeholder(tf.float32)
 with tf.name_scope("Weight1") as scope:
-    W1 = tf.Variable(tf.random_uniform([5, 12], -1.0, 1.0))
-    W1_hist = tf.summary.histogram("Weight1", W1)
+    W1 = tf.Variable(tf.random_normal([n_input, n_hidden_1], -1.0, 1.0))
+    #W1_hist = tf.summary.histogram("Weight1", W1)
 with tf.name_scope("Weight2") as scope:
-    W2 = tf.Variable(tf.random_uniform([12, 12], -1.0, 1.0))
-    W2_hist = tf.summary.histogram("Weight2", W2)
+    W2 = tf.Variable(tf.random_normal([n_hidden_1, n_hidden_2], -1.0, 1.0))
+    #W2_hist = tf.summary.histogram("Weight2", W2)
 with tf.name_scope("Weight3") as scope:
-    W3 = tf.Variable(tf.random_uniform([12, 12], -1.0, 1.0))
-    W3_hist = tf.summary.histogram("Weight3", W3)
+    W3 = tf.Variable(tf.random_normal([n_hidden_2, n_hidden_3], -1.0, 1.0))
+    #W3_hist = tf.summary.histogram("Output", W3)
 with tf.name_scope("Weight4") as scope:
-    W4 = tf.Variable(tf.random_uniform([12, 10], -1.0, 1.0))
-    W4_hist = tf.summary.histogram("Weight4", W4)
+    W4 = tf.Variable(tf.random_normal([n_hidden_3, n_hidden_4], -1.0, 1.0))
+with tf.name_scope("Weight5") as scope:
+    W5 = tf.Variable(tf.random_normal([n_hidden_4, n_classes], -1.0, 1.0))
 
 # Bias
-b1 = tf.Variable(tf.zeros([12]), name = "Bias1")
-b2 = tf.Variable(tf.zeros([12]), name = "Bias2")
-b3 = tf.Variable(tf.zeros([12]), name = "Bias3")
-b4 = tf.Variable(tf.zeros([10]), name = "Bias4")
+b1 = tf.Variable(tf.random_normal([n_hidden_1]), name = "Bias1")
+b2 = tf.Variable(tf.random_normal([n_hidden_2]), name = "Bias2")
+b3 = tf.Variable(tf.random_normal([n_hidden_3]), name = "Bias3")
+b4 = tf.Variable(tf.random_normal([n_hidden_4]), name = "Bias4")
+b5 = tf.Variable(tf.random_normal([n_classes]), name = "Bias5")
+print 'Network Ready...'
 
 # Hypothesis
 with tf.name_scope("input") as scope:
     L1 = tf.nn.relu(tf.matmul(X, W1) + b1)
-    L1 = tf.nn.dropout(L1, keep_prob=keep_prob)  #dropout to prevent overfitting
+    #L1 = tf.nn.dropout(L1, keep_prob=keep_prob)  #dropout to prevent overfitting
 with tf.name_scope("layer2") as scope:
     L2 = tf.nn.relu(tf.matmul(L1, W2) + b2)
-    L2 = tf.nn.dropout(L2, keep_prob=keep_prob)
+    #L2 = tf.nn.dropout(L2, keep_prob=keep_prob)
 with tf.name_scope("layer3") as scope:
     L3 = tf.nn.relu(tf.matmul(L2, W3) + b3)
-    L3 = tf.nn.dropout(L3, keep_prob=keep_prob)
+with tf.name_scope("layer4") as scope:
+    #hypothesis = tf.nn.sigmoid(tf.matmul(L2, W3) + b3)
+    L4 = tf.nn.relu(tf.matmul(L3, W4) + b4)
 with tf.name_scope("output") as scope:
-    hypothesis = tf.sigmoid(tf.matmul(L3, W4) + b4) 
+    hypothesis = tf.sigmoid(tf.matmul(L4, W5) + b5)
+
     
 # cost/loss function
-cost = -tf.reduce_mean(Y * tf.log(hypothesis) + (1 - Y) * tf.log(1 - hypothesis))
-train = tf.train.GradientDescentOptimizer(learning_rate = 0.1).minimize(cost)
+cost = -tf.reduce_mean(Y * tf.log(tf.clip_by_value(hypothesis, 1e-10,tf.reduce_max(hypothesis))) +
+                       (1 - Y) * tf.log(tf.clip_by_value((1 - hypothesis), 1e-10,tf.reduce_max(hypothesis))))
+#cost = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(hypothesis, Y, name='cost')) 
+train = tf.train.GradientDescentOptimizer(learning_rate = 1e-4).minimize(cost)
 correct_prediction = tf.equal(tf.argmax(Y, 1), tf.argmax(hypothesis, 1))
 accuracy = tf.reduce_mean(tf.cast(correct_prediction, tf.float32))
 
 
 #%% Run the graph
 # Initialize TensorFlow variablies
-check_point = 200
+training_epochs = 10000
+batch_size      = 100
+display_step    = 200
+
 sess = tf.InteractiveSession()
 tf.global_variables_initializer().run()
-for i in range(10000):
+for i in range(training_epochs):
 # Iterate 10000 epoches, and every epoch with a batch of 100 data
-    batch_xs, batch_ys = next_batch(100, data_train, label_train)
+    batch_xs, batch_ys = next_batch(batch_size, data_train, label_train)
     sess.run(train, feed_dict = {X: batch_xs, Y: batch_ys, keep_prob: 0.7})
     # hy = sess.run(hypothesis, feed_dict={X: batch_xs, Y: batch_ys, keep_prob: 0.7})
     # print hy.shape
-    if i%check_point ==0:
-        #cost_at_training = sess.run(cost, feed_dict={X: batch_xs, Y: batch_ys, keep_prob: 0.7})
-        #print 'batch' + str(i) +' cost is: ' + str(cost_at_training)
-        print(i, sess.run(cost, feed_dict={X: batch_xs, Y: batch_ys, keep_prob: 1}), sess.run([W1, W2, W3, W4]))
+    if i%display_step ==0:
+        cost_at_running, acc = sess.run([cost, accuracy], feed_dict={X: batch_xs, Y: batch_ys, keep_prob:1})
+        print 'Batch ' + str(i) + '\ncost is: ' + str(cost_at_running) + '       Current accuracy is: ' + str(acc * 100)
 
 
 #%% Test model and check accuracy
