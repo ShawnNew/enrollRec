@@ -100,10 +100,10 @@ Y = tf.placeholder(tf.float32, [None, 10])
 # Define the paras of the layers
 # The weights
 n_input = 5   # 5 features
-n_hidden_1 = 12
-n_hidden_2 = 12
-n_hidden_3 = 12
-n_hidden_4 = 12
+n_hidden_1 = 100
+n_hidden_2 = 100
+n_hidden_3 = 100
+n_hidden_4 = 100
 n_classes = 10
 
 keep_prob = tf.placeholder(tf.float32)
