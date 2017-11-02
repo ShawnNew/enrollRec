@@ -60,7 +60,8 @@ def model(X, w_layer_1, w_layer_2, w_layer_3, w_layer_4, w_layer_5, p_keep_input
 #%% Load the data from xlsx file
 print('Loading the file...')
 path = "/Users/apple/Documents/Github/enrollRec/stuData.xlsx"
-workBook = load_workbook(path)                 # Load the file
+path1 = "/Users/apple/Documents/Github/enrollRec/training_set1.csv"
+workBook = load_workbook(path1)                 # Load the file
 dataSheet = workBook.get_sheet_by_name('TrainData')  # Get the datasheet
 print 'Loading file Done...'
 
