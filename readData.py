@@ -60,7 +60,7 @@ def model(X, w_layer_1, w_layer_2, w_layer_3, w_layer_4, w_layer_5, p_keep_input
 #%% Load the data from xlsx file
 print('Loading the file...')
 path = "/Users/apple/Documents/Github/enrollRec/stuData.xlsx"
-path1 = "/Users/apple/Documents/Github/enrollRec/training_set1.csv"
+path1 = "/Users/apple/Documents/Github/enrollRec/studata2.xlsx"
 workBook = load_workbook(path1)                 # Load the file
 dataSheet = workBook.get_sheet_by_name('TrainData')  # Get the datasheet
 print 'Loading file Done...'
@@ -68,9 +68,9 @@ print 'Loading file Done...'
 #%% From the file read the dataSet
 print('Reading the file...')
 row = 378742
-col = 6
+#col = 6
+col = 44
 dataSet = np.zeros((row, col))
-
 
 for i in range(0, row):
     for j in range(0, col):
@@ -94,22 +94,39 @@ data_train_withlabel = dataSet[0: numTrainSet, :]
 data_test_withlabel = dataSet[numTrainSet: (numTrainSet + numTestSet), :]
 data_val_withlabel = dataSet[(numTrainSet + numTestSet) : (numTrainSet + numTestSet + numValSet), :]
 # Normalize the dataSet
-data_train = normalize_columns(data_train_withlabel[:, 0 : 5])
-data_val = normalize_columns(data_val_withlabel[:, 0: 5])
-data_test = normalize_columns(data_test_withlabel[:, 0: 5])
+#data_train = normalize_columns(data_train_withlabel[:, 0 : 5])
+#data_val = normalize_columns(data_val_withlabel[:, 0: 5])
+#data_test = normalize_columns(data_test_withlabel[:, 0: 5])
+
+data_train = normalize_columns(data_train_withlabel[:, 0 : 43])
+data_val = normalize_columns(data_val_withlabel[:, 0: 43])
+data_test = normalize_columns(data_test_withlabel[:, 0: 43])
+
 # Vectorize the label
 label_train = np.zeros((numTrainSet, 10))
 label_test = np.zeros((numTestSet, 10))
 label_val = np.zeros((numValSet, 10))
+#for i in range(len(data_train_withlabel)):
+#    for j in range(0, 10):
+#        label_train[i][(int(data_train_withlabel[i][5])) - 1] = 1.0
+#for i in range(len(data_test_withlabel)):
+#    for j in range(0, 10):
+#        label_test[i][(int(data_test_withlabel[i][5])) - 1] = 1.0
+#for i in range(len(data_val_withlabel)):
+#    for j in range(0, 10):
+#        label_val[i][(int(data_val_withlabel[i][5])) - 1] = 1.0
+
+
 for i in range(len(data_train_withlabel)):
     for j in range(0, 10):
-        label_train[i][(int(data_train_withlabel[i][5])) - 1] = 1.0
+        label_train[i][(int(data_train_withlabel[i][43]))] = 1.0
 for i in range(len(data_test_withlabel)):
     for j in range(0, 10):
-        label_test[i][(int(data_test_withlabel[i][5])) - 1] = 1.0
+        label_test[i][(int(data_test_withlabel[i][43]))] = 1.0
 for i in range(len(data_val_withlabel)):
     for j in range(0, 10):
-        label_val[i][(int(data_val_withlabel[i][5])) - 1] = 1.0
+        label_val[i][(int(data_val_withlabel[i][43]))] = 1.0
+
 
 print 'Constructing the data done...'
 print 'Size of Training Set:' + str(len(data_train))
@@ -119,12 +136,12 @@ print 'Size of Validation Set:' + str(len(data_val))
 #%% Create the Graph
 # dataset and label
 print 'Creating Network...'
-X = tf.placeholder(tf.float32, [None, 5])
+X = tf.placeholder(tf.float32, [None, 43])
 Y = tf.placeholder(tf.float32, [None, 10])
 
 # Define the paras of the layers
 # The weights
-n_input = 5   # 5 features
+n_input = 43   # 5 features
 n_hidden_1 = 100
 n_hidden_2 = 100
 n_hidden_3 = 100
